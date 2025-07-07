@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   const MenuItem = sequelize.define('MenuItem', {
-    item_id: {
+    menu_item_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
@@ -70,18 +70,26 @@ module.exports = (sequelize) => {
   MenuItem.associate = (models) => {
     MenuItem.belongsTo(models.Category, {
       foreignKey: 'category_id',
-       onDelete: 'RESTRICT',
+      onDelete: 'RESTRICT',
       as: 'category'
     });
+
     MenuItem.hasMany(models.MenuVariant, {
       foreignKey: 'item_id',
       as: 'variants'
     });
+
     MenuItem.hasMany(models.OrderItem, {
       foreignKey: 'item_id',
       as: 'orderItems'
     });
+
+    MenuItem.hasMany(models.MenuIngredient, {
+      foreignKey: 'menu_item_id',
+      as: 'menu_ingredients',
+    });
   };
+
 
   return MenuItem;
 };

@@ -1,4 +1,14 @@
 const jwt = require("jsonwebtoken");
+const logger = require('../utils/logger');
+
+const errorResponse = (res, statusCode, message, details = null) => {
+  return res.status(statusCode).json({
+    success: false,
+    error: message,
+    details,
+    timestamp: new Date().toISOString()
+  });
+};
 
 const verifyToken = (req, res, next) => {
 
@@ -11,7 +21,16 @@ const verifyToken = (req, res, next) => {
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(403).json({ message: "Access token không hợp lệ hoặc hết hạn" });
+      logger.warn('Token verification failed', { 
+        error: err.message, 
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      
+      if (err.name === 'TokenExpiredError') {
+        return errorResponse(res, 401, "Token đã hết hạn");
+      }
+      return errorResponse(res, 403, "Token không hợp lệ");
     }
 
     req.user = decoded; 
@@ -20,3 +39,4 @@ const verifyToken = (req, res, next) => {
 };
 
 module.exports = verifyToken;
+

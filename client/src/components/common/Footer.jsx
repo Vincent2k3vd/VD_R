@@ -12,7 +12,7 @@ import {
   ArrowUp,
 } from "lucide-react";
 
-import Logo from "../assets/Logo.png";
+import Logo from "../../assets/Logo.png";
 
 const Footer = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);

@@ -1,81 +1,103 @@
-import axios from "axios";
-import Auth from "../services/Auth";
+import axios from 'axios';
+import authService from '../services/authService';
+import { getAccessToken } from '../utils/tokenManager';
 
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:2003/api/",
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+function subscribeTokenRefresh(cb) {
+  refreshSubscribers.push(cb);
+}
+
+function onRefreshed(newToken) {
+  refreshSubscribers.forEach(cb => cb(newToken));
+  refreshSubscribers = [];
+}
+
+
+// Callback để handle force logout
+let forceLogoutCallback = null;
+
+/**
+ * Set force logout callback từ useAuth hook
+ * @param {Function} callback - Force logout callback
+ */
+export const setForceLogoutCallback = (callback) => {
+  forceLogoutCallback = callback;
+};
+
+// Tạo axios instance
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
+  timeout: 10000, // 10 seconds timeout
 });
 
-// ✅ Gắn accessToken trước mỗi request
-axiosInstance.interceptors.request.use(
+// Request interceptor
+instance.interceptors.request.use(
   (config) => {
-    const token = Auth.getAccessToken();
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
 );
 
-// ✅ Tự động refreshToken nếu accessToken hết hạn
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
-
-axiosInstance.interceptors.response.use(
+// Response interceptor
+instance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/refresh")
-    ) {
+    
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers["Authorization"] = "Bearer " + token;
-            return axiosInstance(originalRequest);
-          })
-          .catch(Promise.reject);
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(instance(originalRequest));
+          });
+        });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const newToken = await Auth.refreshToken();
+        const response = await authService.refreshToken();
+        const newToken = response.data.data.accessToken;
 
-        // Lưu lại token mới
-        localStorage.setItem("accessToken", newToken);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-
-        processQueue(null, newToken);
-        return axiosInstance(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
-        return Promise.reject(err);
-      } finally {
+        localStorage.setItem('accessToken', newToken);
+        onRefreshed(newToken);
         isRefreshing = false;
+
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return instance(originalRequest);
+      } catch (err) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+
+        if (forceLogoutCallback) forceLogoutCallback();
+        else window.location.href = '/';
+
+        return Promise.reject(err);
       }
     }
 
+    
+    // Handle other errors
+    if (error.response?.status >= 500) {
+      console.error(`[Server Error ${error.response.status}]:`, error.response.data?.message || error.message);
+    }
+
+    
     return Promise.reject(error);
   }
 );
 
-export default axiosInstance;
+export default instance;

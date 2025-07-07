@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import TopInfoBar from "./Header/TopInfoBar";
-import MainNavigation from "../components/Header/MainNavigation";
-import MobileMenu from "./Header/MobileMenu";
+import TopInfoBar from "../Header/TopInfoBar";
+import MainNavigation from "../Header/MainNavigation";
+import MobileMenu from "../Header/MobileMenu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -53,5 +53,13 @@ module.exports = (sequelize) => {
     updatedAt: 'updated_at'
   });
 
+  // 👇 Chỉ cần định nghĩa Inventory.associate
+  Inventory.associate = (models) => {
+    Inventory.hasMany(models.MenuIngredient, {
+      foreignKey: 'inventory_id',
+      as: 'used_in_items',
+    });
+  };
+
   return Inventory;
 };

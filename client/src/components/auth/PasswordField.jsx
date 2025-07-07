@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Lock } from "lucide-react";
 
-const PasswordField = ({ label, name, value, onChange, error }) => {
+const PasswordField = ({ inputRef, label, name, value, onChange, error }) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -25,6 +25,7 @@ const PasswordField = ({ label, name, value, onChange, error }) => {
         <Lock className="w-5 h-5 mr-2 text-gray-400" />
         <input
           type={show ? "text" : "password"}
+          ref={inputRef}
           name={name}
           value={value}
           onChange={onChange}

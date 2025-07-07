@@ -1,4 +1,5 @@
 const InputField = ({
+  inputRef,
   label,
   type = "text",
   name,
@@ -28,6 +29,7 @@ const InputField = ({
       >
         {Icon && <Icon className="w-5 h-5 mr-2 text-gray-400" />}
         <input
+          ref={inputRef}
           type={type}
           name={name}
           value={value}

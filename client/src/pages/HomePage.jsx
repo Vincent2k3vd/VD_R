@@ -1,11 +1,11 @@
 import React from "react";
-import BannerSlider from "../components/BannerSlider";
+import ImageSlider from "../components/common/ImageSlider";
 
 const Home = () => {
   return (
     <>
       <div className="flex justify-center">
-        <BannerSlider />
+        <ImageSlider />
       </div>
 
       {/* Main Content */}

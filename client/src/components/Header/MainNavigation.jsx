@@ -5,7 +5,6 @@ import Logo from "../../assets/Logo.png";
 import NavigationLinks from "./NavigationLinks";
 import UserDropdown from "./UserDropdown";
 import LoginButton from "./LoginButton";
-import Auth from "../../services/Auth";
 import { Calendar, ShoppingCart, UserCircle, Menu } from "lucide-react";
 
 import { useSelector } from "react-redux";

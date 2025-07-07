@@ -5,34 +5,44 @@ module.exports = (sequelize) => {
     table_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
     },
     table_number: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
+    },
+    table_type: {
+      type: DataTypes.ENUM("regular", "vip", "outdoor", "private"),
+      allowNull: false,
+      defaultValue: "regular",
     },
     capacity: {
       type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    location: {
-      type: DataTypes.STRING(50),
-      allowNull: true
+      allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM('available', 'occupied', 'reserved', 'maintenance'),
-      defaultValue: 'available'
+      type: DataTypes.ENUM("available", "reserved", "unavailable"),
+      allowNull: false,
+      defaultValue: "available",
     },
-    qr_code: {
-      type: DataTypes.STRING(255),
-      allowNull: true
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    image_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
     }
   }, {
     tableName: 'tables',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: false
+    updatedAt: 'updated_at'
   });
 
   Table.associate = (models) => {

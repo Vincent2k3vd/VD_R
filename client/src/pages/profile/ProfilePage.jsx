@@ -19,7 +19,9 @@ import {
   Utensils,
   History,
 } from "lucide-react";
-import Auth from "../services/Auth";
+import useAuth from "../../hooks/useAuth";
+import { useSelector } from "react-redux";
+
 import { useEffect } from "react";
 
 const Profile = () => {
@@ -27,6 +29,8 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [editData, setEditData] = useState(null);
+  const accessToken = useSelector((state) => state.auth.accessToken);
+  const { getProfile } = useAuth();
 
   const bookingHistory = [
     {
@@ -121,17 +125,13 @@ const Profile = () => {
       orders: 6,
     },
   ];
+  // Fetch profile data when component mounts
   useEffect(() => {
     const fetchProfile = async () => {
-      try {
-        await Auth.refreshToken();
-        const data = await Auth.getUserProfile();
-        if (data?.user) {
-          setProfileData(data.user);
-          setEditData(data.user);
-        }
-      } catch (error) {
-        console.error("Không thể lấy thông tin người dùng:", error.message);
+      const user = await getProfile({ accessToken });
+      if (user) {
+        setProfileData(user);
+        setEditData(user);
       }
     };
 

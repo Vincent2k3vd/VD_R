@@ -23,4 +23,4 @@ const sequelize = new Sequelize(
   }
 );
 
-module.exports = sequelize; // ✅ chuẩn hơn là export với tên `sequelize`
+module.exports = sequelize; 

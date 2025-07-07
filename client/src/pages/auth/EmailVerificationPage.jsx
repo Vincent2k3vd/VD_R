@@ -11,9 +11,9 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AuthLayout from "../../components/auth/AuthLayout";
 import AuthButton from "../../components/auth/AuthButton";
-import Auth from "../../services/Auth";
+import Auth from "../../services/authService";
 
-const VerifyEmail = () => {
+const VerifyEmailPage = () => {
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -23,32 +23,37 @@ const VerifyEmail = () => {
   const hasVerified = useRef(false);
 
   const MAX_RETRY_ATTEMPTS = 3;
-  const RETRY_DELAY = 2000; // 2 seconds
+  const RETRY_DELAY = 2000;
+
+  const isRetryableError = (error) => {
+    const retryableCodes = ["NETWORK_ERROR", "TIMEOUT", "SERVER_ERROR"];
+    return (
+      retryableCodes.includes(error?.code) || error?.name === "NetworkError"
+    );
+  };
 
   const handleVerificationError = useCallback((error, retryAttempt) => {
     const errorMessage =
       typeof error === "string"
         ? error
-        : error?.error ||
-          error?.response?.data?.error ||
+        : error?.message ||
+          error?.error ||
           "Xác thực thất bại. Vui lòng thử lại.";
-    setError(error?.error);
+    setError(errorMessage);
+
     if (isRetryableError(error) && retryAttempt < MAX_RETRY_ATTEMPTS) {
       setStatus("retrying");
       setRetryCount(retryAttempt + 1);
-
       setTimeout(() => {
         verifyEmail(retryAttempt + 1);
       }, RETRY_DELAY * (retryAttempt + 1));
     } else {
       setStatus("error");
-      setError(errorMessage);
     }
   }, []);
 
   const verifyEmail = useCallback(
     async (retryAttempt = 0) => {
-      // Prevent double execution
       if (hasVerified.current && retryAttempt === 0) return;
       if (retryAttempt === 0) hasVerified.current = true;
 
@@ -61,18 +66,15 @@ const VerifyEmail = () => {
       try {
         setStatus("loading");
         setError(null);
-
-        const res = await Auth.verifyEmail(token);
+        const res = await Auth.verify(token); // Sửa lại từ verifyEmail => verify
 
         if (res.success) {
           setStatus("success");
-
           setTimeout(() => {
             navigate("/auth/signin", { replace: true });
           }, 3000);
         } else {
-          // Xử lý các loại lỗi cụ thể từ server
-          handleVerificationError(res.message);
+          handleVerificationError(res.message, retryAttempt);
         }
       } catch (error) {
         handleVerificationError(error, retryAttempt);
@@ -81,23 +83,20 @@ const VerifyEmail = () => {
     [token, navigate, handleVerificationError]
   );
 
-  const isRetryableError = (error) => {
-    const retryableCodes = ["NETWORK_ERROR", "TIMEOUT", "SERVER_ERROR"];
-    return (
-      retryableCodes.includes(error?.code) || error?.name === "NetworkError"
-    );
-  };
-
   const handleResendEmail = async () => {
     try {
       setStatus("resending");
-      const decoded = jwtDecode(token);
+
+      const decoded = jwtDecode(token); // Có thể lỗi nếu token hỏng
       await Auth.resendVerificationEmail(decoded.email);
+
       setStatus("resent");
       setTimeout(() => setStatus("error"), 3000);
-    } catch (error) {
-      console.log(error);
-      setError("Người dùng không tồn tại hoặc đã xác thực");
+    } catch (err) {
+      err;
+      setError(
+        "Không thể gửi lại email xác thực. Token không hợp lệ hoặc người dùng đã được xác thực."
+      );
       setStatus("error");
     }
   };
@@ -115,7 +114,7 @@ const VerifyEmail = () => {
       setStatus("invalid_token");
       setError("Không tìm thấy mã xác thực trong URL");
     }
-  }, []);
+  }, [token, verifyEmail]);
 
   const renderContent = () => {
     switch (status) {
@@ -235,4 +234,4 @@ const VerifyEmail = () => {
   );
 };
 
-export default VerifyEmail;
+export default VerifyEmailPage;

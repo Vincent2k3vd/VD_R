@@ -1,30 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Mail, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+
 import AuthLayout from "../../components/auth/AuthLayout";
 import InputField from "../../components/auth/InputField";
 import PasswordField from "../../components/auth/PasswordField";
 import AuthButton from "../../components/auth/AuthButton";
 import SocialLogin from "../../components/auth/SocialLogin";
 import FullPageLoader from "../../components/ui/FullPageLoader";
-import Auth from "../../services/Auth";
-import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
-import { setCredentials } from "../../stores/authSlice";
 
-const SignUp = () => {
-  const [loading, setLoading] = useState(false);
+import useAuth from "../../hooks/useAuth";
+
+const RegisterPage = () => {
   const [form, setForm] = useState({
-    fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
     agree: false,
   });
-  const dispatch = useDispatch();
-  const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
+
+  const { register, loginWithGoogle, loading, errors, setErrors } = useAuth();
+
+  const usernameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
+
+  useEffect(() => {
+    setErrors({});
+  }, [setErrors]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,7 +42,7 @@ const SignUp = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.fullName.trim()) newErrors.fullName = "Vui lòng nhập họ tên";
+    if (!form.username.trim()) newErrors.username = "Vui lòng nhập họ tên";
     if (!form.email.trim()) newErrors.email = "Vui lòng nhập email";
     if (!form.password.trim()) newErrors.password = "Vui lòng nhập mật khẩu";
     if (!form.confirmPassword.trim())
@@ -52,73 +57,48 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = validate();
-    setLoading(true);
-    try {
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
-      }
-      await Auth.signup(form.fullName, form.email, form.password);
-      toast.success("Đăng ký thành công!! Kiểm tra mail để xác thực.");
-      navigate("/auth/signin");
-    } catch (error) {
-      toast.error("Đăng ký thất bại. Vui lòng thử lại sau!!");
-      console.log(error);
-    } finally {
-      setLoading(false);
+    const validationErrors = validate(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      if (validationErrors.username) usernameRef.current?.focus();
+      else if (validationErrors.email) emailRef.current?.focus();
+      else if (validationErrors.password) passwordRef.current?.focus();
+      else if (validationErrors.confirmPassword)
+        confirmPasswordRef.current?.focus();
+      return;
     }
-  };
 
-  const handleLoginGoogle = async (credentialResponse) => {
-    try {
-      setLoading(true);
+    console.log(form);
 
-      const id_token = credentialResponse.credential;
-
-      const response = await Auth.loginGoogle(id_token);
-
-      if (response?.error) {
-        toast.error("Đăng nhập bằng Google thất bại.");
-        return;
-      }
-
-      dispatch(
-        setCredentials({
-          user: response.user,
-          accessToken: response.accessToken,
-        })
-      );
-
-      if (form.remember) {
-        localStorage.setItem("remember", "true");
-      } else {
-        localStorage.removeItem("remember");
-      }
-
-      toast.success("Đăng nhập thành công!");
-      navigator("/");
-    } catch (err) {
-      toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
-      setForm((prev) => ({ ...prev, password: "" }));
-      console.error("Login error:", err);
-    } finally {
-      setLoading(false);
-    }
+    await register(form);
   };
 
   return (
     <AuthLayout>
       {loading && <FullPageLoader />}
       <h2 className="text-2xl font-bold text-center mb-6">Tạo tài khoản</h2>
+
+      {/* Lỗi tổng quát */}
+      {errors.general && (
+        <p className="text-red-400 text-sm text-center mb-4">
+          {errors.general}
+        </p>
+      )}
+      {errors.validation && (
+        <p className="text-red-400 text-sm text-center mb-4">
+          {errors.validation}
+        </p>
+      )}
+
       <form onSubmit={handleSubmit} noValidate>
         <InputField
           label="Họ tên"
-          name="fullName"
+          name="username"
           icon={User}
-          value={form.fullName}
+          value={form.username}
           onChange={handleChange}
-          error={errors.fullName}
+          error={errors.username}
+          inputRef={usernameRef}
         />
         <InputField
           label="Email"
@@ -127,6 +107,7 @@ const SignUp = () => {
           value={form.email}
           onChange={handleChange}
           error={errors.email}
+          inputRef={emailRef}
         />
         <PasswordField
           label="Mật khẩu"
@@ -134,6 +115,7 @@ const SignUp = () => {
           value={form.password}
           onChange={handleChange}
           error={errors.password}
+          inputRef={passwordRef}
         />
         <PasswordField
           label="Nhập lại mật khẩu"
@@ -141,16 +123,17 @@ const SignUp = () => {
           value={form.confirmPassword}
           onChange={handleChange}
           error={errors.confirmPassword}
+          inputRef={confirmPasswordRef}
         />
 
-        <div className="flex items-center mb-2">
+        <div className="flex items-start mb-2">
           <input
             type="checkbox"
             name="agree"
             id="agree"
             checked={form.agree}
             onChange={handleChange}
-            className="mr-2"
+            className="mr-2 mt-1"
           />
           <label htmlFor="agree" className="text-sm text-gray-300">
             Tôi đồng ý với{" "}
@@ -167,13 +150,19 @@ const SignUp = () => {
           <p className="text-sm text-red-400 mt-1">{errors.agree}</p>
         )}
 
-        <AuthButton label="Đăng ký" type="submit" />
+        <AuthButton
+          label="Đăng ký"
+          type="submit"
+          loading={loading}
+          disabled={loading}
+        />
       </form>
 
       <span className="block text-center text-sm text-gray-400 mt-4">
         Hoặc đăng ký bằng
       </span>
-      <SocialLogin onGoogleClick={handleLoginGoogle} />
+      <SocialLogin onGoogleClick={(res) => loginWithGoogle(res.credential)} />
+
       <p className="text-sm text-center mt-4">
         Đã có tài khoản?{" "}
         <NavLink to="/auth/signin" className="text-blue-400 underline">
@@ -184,4 +173,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default RegisterPage;

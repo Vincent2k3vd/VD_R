@@ -5,16 +5,17 @@ import AuthLayout from "../layouts/AuthLayout";
 
 // Lazy load
 import { lazy } from "react";
-const Home = lazy(() => import("../pages/Home"));
+const Home = lazy(() => import("../pages/HomePage"));
 const About = lazy(() => import("../pages/About"));
 const Contact = lazy(() => import("../pages/Contact"));
-const Profile = lazy(() => import("../pages/Profile"));
+const Profile = lazy(() => import("../pages/profile/ProfilePage"));
+const Booking = lazy(() => import("../pages/booking/BookingPage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
-const SignIn = lazy(() => import("../pages/auth/SignIn"));
-const SignUp = lazy(() => import("../pages/auth/SignUp"));
-const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
-const VerifyEmail = lazy(() => import("../pages/auth/VerifyEmail"));
+const SignIn = lazy(() => import("../pages/auth/LoginPage"));
+const SignUp = lazy(() => import("../pages/auth/RegisterPage"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPasswordPage"));
+const ResetPassword = lazy(() => import("../pages/auth/ResetPasswordPage"));
+const VerifyEmail = lazy(() => import("../pages/auth/EmailVerificationPage"));
 
 const routes = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ const routes = createBrowserRouter([
       { path: "info", element: createElement(About) },
       { path: "contact", element: createElement(Contact) },
       { path: "profile", element: createElement(Profile) },
+      { path: "reservation", element: createElement(Booking) },
     ],
   },
   {
