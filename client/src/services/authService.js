@@ -1,4 +1,4 @@
-// src/services/authService.js
+
 import axios from 'axios';
 import axiosInstance from '../utils/axiosInstance';
 
@@ -77,6 +77,7 @@ class AuthService {
   /**
    * User logout
    */
+  
   async logout() {
     try {
       const response = await axiosInstance.post(`${API_AUTH}/logout`, {}, {

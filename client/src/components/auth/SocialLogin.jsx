@@ -5,7 +5,6 @@ const SocialLogin = ({ onGoogleClick }) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Kiểm tra xem Google script đã load chưa
     const checkGoogleScript = () => {
       if (window.google && window.google.accounts) {
         setIsGoogleLoaded(true);
@@ -14,7 +13,6 @@ const SocialLogin = ({ onGoogleClick }) => {
       return false;
     };
 
-    // Nếu Google script chưa load, thử load nó
     if (!checkGoogleScript()) {
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
@@ -37,7 +35,6 @@ const SocialLogin = ({ onGoogleClick }) => {
   useEffect(() => {
     if (isGoogleLoaded && !isInitialized && onGoogleClick) {
       try {
-        // Thêm error handling cho COOP
         const handleCredentialResponse = (response) => {
           try {
             onGoogleClick(response);
@@ -51,15 +48,12 @@ const SocialLogin = ({ onGoogleClick }) => {
           callback: handleCredentialResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
-          // Thêm config để tránh COOP issues
           use_fedcm_for_prompt: false,
         });
 
-        // Đợi một chút để đảm bảo DOM element đã sẵn sàng
         setTimeout(() => {
           const buttonElement = document.getElementById("google-button");
           if (buttonElement) {
-            // Clear nội dung cũ trước khi render
             buttonElement.innerHTML = "";
 
             window.google.accounts.id.renderButton(buttonElement, {
@@ -79,7 +73,6 @@ const SocialLogin = ({ onGoogleClick }) => {
     }
   }, [isGoogleLoaded, isInitialized, onGoogleClick]);
 
-  // Fallback button nếu Google Sign-In không load được
   const handleFallbackClick = () => {
     alert(
       "Google Sign-In không khả dụng. Vui lòng thử lại sau hoặc sử dụng đăng nhập thông thường."
@@ -87,8 +80,8 @@ const SocialLogin = ({ onGoogleClick }) => {
   };
 
   return (
-    <div className="flex justify-center mt-4 w-120">
-      <div id="google-button" className="w-full max-w-xs">
+    <div className="flex justify-center mt-4">
+      <div id="google-button" className="max-w-xs">
         {!isGoogleLoaded && (
           <button
             onClick={handleFallbackClick}

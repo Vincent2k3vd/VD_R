@@ -1,6 +1,8 @@
 import axios from 'axios';
 import authService from '../services/authService';
 import { getAccessToken } from '../utils/tokenManager';
+import { logout } from '../stores/authSlice';
+import { store } from '../stores';
 
 let isRefreshing = false;
 let refreshSubscribers = [];
@@ -14,26 +16,19 @@ function onRefreshed(newToken) {
   refreshSubscribers = [];
 }
 
-
-// Callback để handle force logout
 let forceLogoutCallback = null;
 
-/**
- * Set force logout callback từ useAuth hook
- * @param {Function} callback - Force logout callback
- */
 export const setForceLogoutCallback = (callback) => {
   forceLogoutCallback = callback;
 };
 
-// Tạo axios instance
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_BASE_URL_API,
   withCredentials: true,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 10000,
 });
 
-// Request interceptor
+// REQUEST interceptor
 instance.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
@@ -42,20 +37,19 @@ instance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    console.error('Request interceptor error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// RESPONSE interceptor
 instance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
-    // Handle 401 Unauthorized
+
+    // Khi access token hết hạn
     if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((token) => {
@@ -65,7 +59,6 @@ instance.interceptors.response.use(
         });
       }
 
-      originalRequest._retry = true;
       isRefreshing = true;
 
       try {
@@ -82,20 +75,28 @@ instance.interceptors.response.use(
         isRefreshing = false;
         refreshSubscribers = [];
 
-        if (forceLogoutCallback) forceLogoutCallback();
-        else window.location.href = '/';
+        // Nếu refresh token hết hạn hoặc lỗi → logout
+        if (
+          err.response?.status === 401 &&
+          err.response?.data?.message === 'Refresh token expired'
+        ) {
+          store.dispatch(logout());
+          window.location.href = '/login';
+        } else if (forceLogoutCallback) {
+          forceLogoutCallback();
+        } else {
+          window.location.href = '/login';
+        }
 
         return Promise.reject(err);
       }
     }
 
-    
-    // Handle other errors
+    // Server error khác
     if (error.response?.status >= 500) {
       console.error(`[Server Error ${error.response.status}]:`, error.response.data?.message || error.message);
     }
 
-    
     return Promise.reject(error);
   }
 );

@@ -1,14 +1,15 @@
-const AWS = require('aws-sdk');
-const dotenv = require('dotenv');
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const dotenv = require("dotenv");
 dotenv.config();
 
-AWS.config.update({
+// Khởi tạo client SES
+const sesClient = new SESClient({
   region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
-
-const ses = new AWS.SES({ apiVersion: '2010-12-01' });
 
 const sendEmail = async ({ to, subject, html }) => {
   const params = {
@@ -18,19 +19,27 @@ const sendEmail = async ({ to, subject, html }) => {
     Message: {
       Body: {
         Html: {
-          Charset: 'UTF-8',
+          Charset: "UTF-8",
           Data: html,
         },
       },
       Subject: {
-        Charset: 'UTF-8',
+        Charset: "UTF-8",
         Data: subject,
       },
     },
     Source: process.env.EMAIL_FROM,
   };
 
-  return ses.sendEmail(params).promise();
+  const command = new SendEmailCommand(params);
+
+  try {
+    const response = await sesClient.send(command);
+    return response;
+  } catch (error) {
+    console.error("Lỗi gửi email:", error);
+    throw error;
+  }
 };
 
 module.exports = { sendEmail };

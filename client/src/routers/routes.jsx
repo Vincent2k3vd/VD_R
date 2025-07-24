@@ -5,17 +5,21 @@ import AuthLayout from "../layouts/AuthLayout";
 
 // Lazy load
 import { lazy } from "react";
-const Home = lazy(() => import("../pages/HomePage"));
-const About = lazy(() => import("../pages/About"));
-const Contact = lazy(() => import("../pages/Contact"));
+const Home = lazy(() => import("../pages/navbar/HomePage"));
+const About = lazy(() => import("../pages/navbar/About"));
+const Contact = lazy(() => import("../pages/navbar/Contact"));
+const Menu = lazy(() => import("../pages/navbar/MenuPage"));
 const Profile = lazy(() => import("../pages/profile/ProfilePage"));
-const Booking = lazy(() => import("../pages/booking/BookingPage"));
-const NotFound = lazy(() => import("../pages/NotFound"));
+const Booking = lazy(() => import("../pages/Reservation/ReservationPage"));
+const NotFound = lazy(() => import("../pages/navbar/NotFound"));
 const SignIn = lazy(() => import("../pages/auth/LoginPage"));
 const SignUp = lazy(() => import("../pages/auth/RegisterPage"));
 const ForgotPassword = lazy(() => import("../pages/auth/ForgotPasswordPage"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPasswordPage"));
 const VerifyEmail = lazy(() => import("../pages/auth/EmailVerificationPage"));
+const TableList = lazy(() => import("../pages/TableList"));
+
+const Dashboard = lazy(() => import("../pages/admin/Dashboard"));
 
 const routes = createBrowserRouter([
   {
@@ -23,10 +27,13 @@ const routes = createBrowserRouter([
     element: createElement(MainLayout),
     children: [
       { index: true, element: createElement(Home) },
-      { path: "info", element: createElement(About) },
+      { path: "about", element: createElement(About) },
       { path: "contact", element: createElement(Contact) },
+      { path: "menu", element: createElement(Menu) },
       { path: "profile", element: createElement(Profile) },
       { path: "reservation", element: createElement(Booking) },
+      { path: "tablelist", element: createElement(TableList) },
+      { path: "dashboard", element: createElement(Dashboard) },
     ],
   },
   {

@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     role_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 5,
+      defaultValue: 4,
       references: {
         model: 'roles',
         key: 'role_id'
@@ -61,6 +61,12 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Order, { foreignKey: 'user_id', as: 'orders' });
     User.hasOne(models.DeliveryStaff, { foreignKey: 'user_id', as: 'deliveryStaff' });
     User.hasMany(models.Review, { foreignKey: 'user_id', as: 'reviews' });
+
+    User.hasMany(models.Reservation, {
+      foreignKey: 'user_id',
+      as: 'reservations'
+    });
+
   };
 
   return User;

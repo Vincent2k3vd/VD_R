@@ -251,22 +251,27 @@ const useAuth = () => {
   }, [navigate, handleAuthError, clearErrors]);
 
   const logout = useCallback(async () => {
-    setLoading(true);
-    
-    try {
-      
-      await authService.logout();
-    
-      clearAuthData();
-      navigate("/", { replace: true });
-      setLoading(false);
-      toast.success("Đăng xuất thành công!");
-    } catch (error) {
-      console.error("Server logout error:", error);
+  setLoading(true);
 
-      toast.success("Đăng xuất thất bại!");
-    } 
-  }, [navigate, clearAuthData]);
+  try {
+    
+    await authService.logout();
+    
+  } catch (error) {
+    console.warn("Không thể logout server:", error?.response?.data?.message || error.message);
+  } finally {
+
+    clearAuthData();
+
+    localStorage.removeItem("accessToken");
+
+    toast.success("Đăng xuất thành công!");
+    setLoading(false);
+
+    navigate("/", { replace: true });
+  }
+}, [navigate, clearAuthData]);
+
 
   const forceLogout = useCallback(() => {
     clearAuthData();

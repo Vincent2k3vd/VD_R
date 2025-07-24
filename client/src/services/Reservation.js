@@ -1,5 +1,5 @@
 import axios from "axios";
-import axiosInstance from "../utils/axiosInstance";
+// import axiosInstance from "../utils/axiosInstance";
 const API_URL = import.meta.env.VITE_API_URL1;
 
 class Reservation {
@@ -28,30 +28,34 @@ class Reservation {
 
 
   // GET /tables?status=available
-    async showTable(status = null) {
-    try {
-        const query = status ? `?status=${status}` : "";
-        const res = await axios.get(API_URL + "table" + query, {
-        withCredentials: true
-        });
-        return res.data;
-    } catch (error) {
-        this.handleError(error, "Không thể lấy danh sách bàn");
-    }
-    }
+  async showTable(status = null) {
+  try {
+    const query = status ? `?status=${status}` : "";
+    const res = await axios.get(API_URL + "table" + query, {
+      withCredentials: true
+    });
+
+    // 👇 Chắc chắn trả về mảng
+    return Array.isArray(res.data?.data) ? res.data.data : res.data;
+  } catch (error) {
+    this.handleError(error, "Không thể lấy danh sách bàn");
+  }
+}
+
 
 getAccessToken() {
     return localStorage.getItem("accessToken");
   }
   // ✅ Lấy danh sách đặt bàn của user hiện tại
-  async getMyReservations() {
-    try {
-        const res = await axiosInstance.get("reservation");
-      return res.data;
-    } catch (error) {
-      this.handleError(error, "Không thể lấy danh sách đặt bàn");
-    }
+  async getMyReservations(userId) {
+  try {
+    const res = await axios.get(API_URL + "/user/" + userId);
+    return res.data;
+  } catch (error) {
+    this.handleError(error, "Không thể lấy danh sách đặt bàn");
   }
+}
+
 
   // Xử lý lỗi chung
   handleError(error, defaultMessage) {

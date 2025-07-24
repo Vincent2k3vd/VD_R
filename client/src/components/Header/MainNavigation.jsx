@@ -50,13 +50,23 @@ const MainNavigation = ({
             setActiveDropdown={setActiveDropdown}
           />
 
-          <Link
-            to="/reservation"
-            className="group inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-md hover:shadow-xl transition-transform transform hover:scale-105"
-          >
-            <Calendar className="w-5 h-5" />
-            <span className="text-sm">Đặt bàn ngay</span>
-          </Link>
+          {reduxUser ? (
+            <Link
+              to="/reservation"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-md hover:shadow-xl transition-transform transform hover:scale-105"
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-sm">Đặt bàn ngay</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => alert("Vui lòng đăng nhập để đặt bàn.")}
+              className="group inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-md cursor-not-allowed"
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-sm">Đặt bàn ngay</span>
+            </button>
+          )}
 
           <button className="relative flex items-center justify-center p-3 bg-white border border-gray-200 rounded-xl text-gray-700 hover:text-orange-600 shadow-sm hover:shadow-md transition">
             <ShoppingCart className="w-6 h-6" />

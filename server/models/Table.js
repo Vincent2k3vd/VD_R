@@ -13,9 +13,9 @@ module.exports = (sequelize) => {
       unique: true,
     },
     table_type: {
-      type: DataTypes.ENUM("regular", "vip", "outdoor", "private"),
-      allowNull: false,
-      defaultValue: "regular",
+      type: DataTypes.ENUM('standard', 'private', 'outdoor', 
+      ),
+      allowNull: false
     },
     capacity: {
       type: DataTypes.INTEGER,
@@ -27,8 +27,8 @@ module.exports = (sequelize) => {
       defaultValue: "available",
     },
     location: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.ENUM('tầng trệt', 'tầng 1', 'tầng thượng'),
+      allowNull: false
     },
     description: {
       type: DataTypes.TEXT,
@@ -49,6 +49,13 @@ module.exports = (sequelize) => {
     Table.hasMany(models.Order, {
       foreignKey: 'table_id',
       as: 'orders'
+    });
+
+    Table.belongsToMany(models.Reservation, {
+      through: models.ReservationTable,
+      foreignKey: 'table_id',
+      otherKey: 'reservation_id',
+      as: 'reservations'
     });
   };
 

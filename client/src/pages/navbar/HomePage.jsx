@@ -1,5 +1,5 @@
 import React from "react";
-import ImageSlider from "../components/common/ImageSlider";
+import ImageSlider from "../../components/common/ImageSlider";
 
 const Home = () => {
   return (

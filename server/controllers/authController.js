@@ -1,8 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { validationResult } = require('express-validator');
-const rateLimit = require('express-rate-limit');
-const { User, RefreshToken, Role, sequelize } = require('../models/index');
+const { User, RefreshToken, Role } = require('../models/index');
 const { sendEmail } = require('../utils/mailer');
 const { OAuth2Client } = require("google-auth-library");
 const logger = require('../utils/logger');
@@ -718,8 +716,9 @@ const logout = async (req, res) => {
 
 const authGoogle = async (req, res) => {
   try {
-    const { id_token } = req.body;
     
+    const { id_token } = req.body;
+
     if (!id_token) {
       return errorResponse(res, 400, "Google ID token không hợp lệ");
     }
@@ -762,7 +761,7 @@ const authGoogle = async (req, res) => {
       const accessToken = generateToken({ 
         id: user.user_id, 
         email: user.email, 
-        role: user.role 
+        role: user.role_id
       });
 
       const refreshToken = generateRefreshToken({ id: user.user_id });
@@ -798,13 +797,12 @@ const authGoogle = async (req, res) => {
           user_id: user.user_id,
           username: user.username,
           email: user.email,
-          role: user.role,
+          role: user.role_id,
           avatar: user.avatar
         },
         accessToken,
       });
     } catch (error) {
-      await t.rollback();
       logger.error('Google login error', { 
         error: error.message, 
         stack: error.stack,

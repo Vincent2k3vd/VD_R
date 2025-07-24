@@ -12,7 +12,9 @@ const port = process.env.PORT;
 
 const db = require('./models');
 const authRouter = require ('./routers/authRoutes.js');
-const reservationRouter = require ('./routers/reservationRoutes.js')
+const tableRouter = require ('./routers/tableRoutes.js')
+const menuItemRoutes = require('./routers/menuItemRoutes.js');
+const reservationRoutes = require('./routers/reservationRoutes')
 const { applySecurityMiddleware, errorHandler, notFoundHandler} = require('./middlewares/security');
 
 
@@ -40,7 +42,9 @@ app.get('/', (req, res) => {
 
 // All route
 app.use('/api/auth', authRouter);
-app.use('/api/reservation', reservationRouter);
+app.use('/api/tables', tableRouter);
+app.use('/api/menu-items', menuItemRoutes);
+app.use('/api/reservations', reservationRoutes);
 
 
 // Error handling middleware
@@ -53,6 +57,7 @@ const start = async () => {
 
     await db.sequelize.authenticate();
     await db.sequelize.sync();
+    
     console.log('✅ Khởi tạo kết nối DB thành công.');
 
     const server = app.listen(port, () => {
