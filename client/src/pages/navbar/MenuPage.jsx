@@ -1,11 +1,10 @@
 import React from "react";
-import MenuItem from "../../components/MenuItem";
 
 const MenuPage = () => {
   return (
     <>
       <div>
-        <MenuItem />
+        <h1>xin chào</h1>
       </div>
     </>
   );
