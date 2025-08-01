@@ -1,95 +1,49 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getAllTables, 
-    getTableById, 
-    getTablesByStatus, 
-    createTable, 
-    updateTable, 
-    deleteTable,
-    getStatus,
-    findGuestCount
-} = require('../controllers/tableController');
+const tableController = require('../controllers/tableController');
 
-const validateTableFilters = require ('../middlewares/validateTableFilters.js')
-const validateTableId = require ('../middlewares/validateTableId.js')
+// Middlewares
+const validateTableFilters = require('../middlewares/validateTableFilters.js');
+const validateTableId = require('../middlewares/validateTableId.js');
+const verifyToken = require('../middlewares/verifyToken.js');
+const verifyRole = require('../middlewares/verifyRole.js');
 
+// Gợi ý bàn nâng cao
+router.post("/recommend", tableController.recommendTables);
 
-router.post('/search/by-guest', findGuestCount);
+// Tìm bàn theo số khách
+router.post('/search/by-guest', tableController.findGuestCount);
 
-router.get('/', validateTableFilters, getAllTables);
+// Lấy tất cả bàn, có filter
+router.get('/', validateTableFilters, tableController.getAllTables);
 
+// Lọc theo trạng thái
+router.get('/status/:status', tableController.getTablesByStatus);
+
+// Lấy table theo ID
+router.get('/:id', validateTableId, tableController.getTableById);
+
+// Tạo bàn
+router.post('/', verifyToken, verifyRole([2, 1]), tableController.createTable);
+
+// Cập nhật toàn bộ bàn
+router.put('/:id', verifyToken, verifyRole([2, 1]), validateTableId, tableController.updateTable);
+
+// Cập nhật chỉ trạng thái
 /**
- * @route GET /tables/status/:status
- * @desc Get tables by specific status
- * @access Public
- * @param {string} status - Table status
- * @example GET /tables/status/available
+ * @route PATCH /tables/:id/status
+ * @desc Update table status only (available/reserved/unavailable)
+ * @access Private (Employee/Admin)
  */
-router.get('/status/:status', getTablesByStatus);
+router.patch('/:id/status', verifyToken, verifyRole([2, 1]), validateTableId, tableController.updateTableStatus);
 
-/**
- * @route GET /tables/:id
- * @desc Get table by ID
- * @access Public
- * @param {number} id - Table ID
- * @example GET /tables/1
- */
-router.get('/:id', validateTableId, getTableById);
+// Xoá bàn
+router.delete('/:id', verifyToken, verifyRole([2, 1]), validateTableId, tableController.deleteTable);
 
-/**
- * @route POST /tables
- * @desc Create new table
- * @access Private (add auth middleware if needed)
- * @body {object} table - Table data
- * @example POST /tables
- */
-router.post('/', createTable);
+// Lấy filter options (status, loại, vị trí...)
+router.get('/filters/options', tableController.options);
 
-/**
- * @route PUT /tables/:id
- * @desc Update table by ID
- * @access Private (add auth middleware if needed)
- * @param {number} id - Table ID
- * @body {object} table - Updated table data
- * @example PUT /tables/1
- */
-router.put('/:id', validateTableId, updateTable);
-
-/**
- * @route DELETE /tables/:id
- * @desc Delete table by ID
- * @access Private (add auth middleware if needed)
- * @param {number} id - Table ID
- * @example DELETE /tables/1
- */
-router.delete('/:id', validateTableId, deleteTable);
-
-// Additional helpful routes
-
-/**
- * @route GET /tables/filters/options
- * @desc Get all available filter options
- * @access Public
- */
-router.get('/filters/options', (req, res) => {
-    res.json({
-        success: true,
-        data: {
-            status: ['available', 'occupied', 'reserved', 'maintenance'],
-            type: ['standard', 'vip', 'private', 'outdoor'],
-            sortBy: ['id', 'name', 'capacity', 'price', 'status', 'type', 'created_at', 'updated_at'],
-            sortOrder: ['ASC', 'DESC']
-        }
-    });
-});
-
-/**
- * @route GET /tables/stats/summary
- * @desc Get table statistics summary
- * @access Public
- */
-router.get('/stats/summary', getStatus);
-
+// Thống kê bàn
+router.get('/stats/summary', tableController.getStatus);
 
 module.exports = router;

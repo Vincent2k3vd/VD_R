@@ -6,7 +6,7 @@ export const recommendTables = (tablesDataRaw, guestCount) => {
   }
 
   const tablesData = tablesDataRaw.filter(
-    (t) => t.status === "available" && t.table_type !== "private"
+    (t) => t.status === "available"
   );
   const single = [];
   const combinations = [];
@@ -18,9 +18,6 @@ export const recommendTables = (tablesDataRaw, guestCount) => {
         t.table_type?.toLowerCase().includes("outdoor"))
   );
 
-  const onlyRegularTables = tablesData.every(
-    (t) => t.table_type === "private"
-  );
   for (const table of tablesData) {
     if (table.capacity >= guestCount) {
       const efficiency = guestCount / table.capacity;
@@ -40,11 +37,12 @@ export const recommendTables = (tablesDataRaw, guestCount) => {
       guestCount >= 5 && guestCount <= 7 && !hasBigOutdoorTable
     ) ||
     (
-      guestCount > 8 && !onlyRegularTables
+      guestCount > 8
     );
   if (shouldSuggestCombination) {
   const groupedByType = {
     standard: tablesData.filter(t => t.table_type === "standard"),
+    private: tablesData.filter(t => t.table_type === "private"),
     outdoor: tablesData.filter(t => t.table_type === "outdoor"),
   };
 

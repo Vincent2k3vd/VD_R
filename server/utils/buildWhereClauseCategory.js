@@ -9,12 +9,13 @@ const buildWhereClause = (filters) => {
     }
     
     if (filters.is_available !== undefined) {
-        whereClause.is_available = filters.is_available === 'true';
+        whereClause.is_available = filters.is_available;
     }
-    
+
     if (filters.is_featured !== undefined) {
-        whereClause.is_featured = filters.is_featured === 'true';
+        whereClause.is_featured = filters.is_featured;
     }
+
     
     // Price range filters
     if (filters.price) {

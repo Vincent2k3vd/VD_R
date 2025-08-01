@@ -5,12 +5,10 @@ import {
   fetchTableStatus,
   fetchTableFilters,
   fetchTableStats,
-  findGuestCount,
 } from "../services/tableService";
 
-export const useGuetCount = (guest) => {
-    return useQuery(() => findGuestCount(guest), [guest]);
-}
+
+
 
 export const useGetTable = (params) => {
   return useQuery(() => fetchTables(params), [JSON.stringify(params)]);

@@ -64,7 +64,7 @@ const NavigationLinks = ({
         {activeDropdown === "services" && (
           <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
             <NavLink
-              to="/booking"
+              to="/reservation"
               className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
             >
               Đặt bàn

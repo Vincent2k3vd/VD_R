@@ -1,8 +1,7 @@
 import axios from 'axios';
 import authService from '../services/authService';
-import { getAccessToken } from '../utils/tokenManager';
-import { logout } from '../stores/authSlice';
-import { store } from '../stores';
+import { logout, updateToken } from '../stores/authSlice';
+import { store } from '../stores/index';
 
 let isRefreshing = false;
 let refreshSubscribers = [];
@@ -11,8 +10,8 @@ function subscribeTokenRefresh(cb) {
   refreshSubscribers.push(cb);
 }
 
-function onRefreshed(newToken) {
-  refreshSubscribers.forEach(cb => cb(newToken));
+function onRefreshed(token) {
+  refreshSubscribers.forEach(cb => cb(token));
   refreshSubscribers = [];
 }
 
@@ -31,9 +30,9 @@ const instance = axios.create({
 // REQUEST interceptor
 instance.interceptors.request.use(
   (config) => {
-    const token = getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const accessToken = store.getState().auth.accessToken;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -62,34 +61,42 @@ instance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await authService.refreshToken();
-        const newToken = response.data.data.accessToken;
 
-        localStorage.setItem('accessToken', newToken);
+        const response = await authService.refreshToken();
+
+        const newToken = response.data.accessToken;
+        if (!newToken) {
+          console.error("New access token not found!");
+          throw new Error("Access token is missing");
+        }
+  
+        store.dispatch(updateToken(newToken));
+
         onRefreshed(newToken);
         isRefreshing = false;
 
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return instance(originalRequest);
       } catch (err) {
+        console.error("Refresh token failed:", err);
         isRefreshing = false;
         refreshSubscribers = [];
 
-        // Nếu refresh token hết hạn hoặc lỗi → logout
         if (
           err.response?.status === 401 &&
           err.response?.data?.message === 'Refresh token expired'
         ) {
-          store.dispatch(logout());
-          window.location.href = '/login';
+          store.dispatch(logout()); 
+          window.location.href = '/auth/signin';
         } else if (forceLogoutCallback) {
           forceLogoutCallback();
         } else {
-          window.location.href = '/login';
+          window.location.href = '/auth/signin';
         }
 
         return Promise.reject(err);
       }
+
     }
 
     // Server error khác

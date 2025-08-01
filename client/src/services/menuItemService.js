@@ -1,18 +1,15 @@
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from '../utils/axiosInstance';
 const API = import.meta.env.VITE_BASE_URL_API;
 
-
 /**
- * Gợi ý món ăn theo từ khoá (autocomplete)
- * @param {string} query - từ khoá tìm kiếm
- * @returns {Promise} danh sách món ăn phù hợp
- * @example fetchMenuSuggestions("phở")
+ * 🔍 Tìm kiếm món ăn (autocomplete / search box)
+ * @hook useQuery(['menu-search', query], ...)
  */
-export const fetchMenuSuggestions = (query) => {
-  return axiosInstance.get(`${API}/menu-items`, {
+export const searchMenuItems = (query, limit = 5) => {
+  return axiosInstance.get(`${API}/menu-items/search`, {
     params: {
-      search: query,
-      limit: 5, // Giới hạn kết quả để nhẹ
+      keyword: query,
+      limit,
       sortBy: 'item_name',
       sortOrder: 'ASC'
     }
@@ -20,68 +17,83 @@ export const fetchMenuSuggestions = (query) => {
 };
 
 /**
- * Lấy tất cả món ăn với lọc, phân trang và sắp xếp
- * @param {object} params - Các query param: category, availability, page, limit, sort
+ * 📋 Lấy tất cả món ăn (đơn giản)
+ * @hook useQuery(['menu-all'], ...)
  */
-export const fetchAllMenuItems = (params = {}) => {
+export const fetchAllMenuItems = () => {
+  return axiosInstance.get(`${API}/menu-items/all`);
+};
+
+/**
+ * 📦 Lấy danh sách món ăn có lọc/phân trang
+ * @param {object} params - { category_id, is_available, page, limit, sortBy, sortOrder }
+ * @hook useQuery(['menu-filter', params], ...)
+ */
+export const fetchFilteredMenuItems = (params) => {
   return axiosInstance.get(`${API}/menu-items`, { params });
 };
 
 /**
- * Lấy món ăn theo ID
- * @param {string|number} id
+ * 📄 Lấy chi tiết món ăn theo ID
+ * @hook useQuery(['menu-detail', id], ...)
  */
-export const fetchMenuItemById = (id) => {
-  return axiosInstance.get(`${API}/menu-items/${id}`);
-};
-
-/**
- * Tạo món ăn mới
- * @param {object} data - Dữ liệu món ăn
- */
-export const createMenuItem = (data) => {
-  return axiosInstance.post(`${API}/menu-items`, data);
-};
-
-/**
- * Cập nhật món ăn
- * @param {string|number} id
- * @param {object} data - Dữ liệu cập nhật
- */
-export const updateMenuItem = (id, data) => {
-  return axiosInstance.put(`${API}/menu-items/${id}`, data);
-};
-
-/**
- * Xóa món ăn
- * @param {string|number} id
- */
-export const deleteMenuItem = (id) => {
-  return axiosInstance.delete(`${API}/menu-items/${id}`);
-};
-
-/**
- * Cập nhật trạng thái còn bán/ẩn của món ăn (availability)
- * @param {string|number} id
- * @param {boolean} available
- */
-export const updateMenuItemAvailability = (id, available) => {
-  return axiosInstance.patch(`${API}/menu-items/${id}/availability`, {
-    available,
+export const fetchMenuItemById = (id, includeAll = true) => {
+  return axiosInstance.get(`${API}/menu-items/${id}`, {
+    params: { include_all: includeAll }
   });
 };
 
 /**
- * Lấy danh sách món ăn nổi bật (featured)
+ * ⭐ Lấy món ăn nổi bật
+ * @hook useQuery(['menu-featured'], ...)
  */
 export const fetchFeaturedMenuItems = () => {
   return axiosInstance.get(`${API}/menu-items/featured`);
 };
 
 /**
- * Lấy món ăn theo category ID
- * @param {string|number} category_id
+ * 📂 Lấy món ăn theo danh mục
+ * @hook useQuery(['menu-category', categoryId], ...)
  */
-export const fetchMenuItemsByCategory = (category_id) => {
-  return axiosInstance.get(`${API}/menu-items/category/${category_id}`);
+export const fetchMenuItemsByCategory = (category_id, include_variants = false) => {
+  return axiosInstance.get(`${API}/menu-items/category/${category_id}`, {
+    params: {
+      include_variants,
+      only_available: true
+    }
+  });
+};
+
+/**
+ * ➕ Tạo món ăn mới (admin)
+ * @hook useMutation
+ */
+export const createMenuItem = (data) => {
+  return axiosInstance.post(`${API}/menu-items`, data);
+};
+
+/**
+ * ✏️ Cập nhật món ăn (admin)
+ * @hook useMutation
+ */
+export const updateMenuItem = (id, data) => {
+  return axiosInstance.put(`${API}/menu-items/${id}`, data);
+};
+
+/**
+ * 🗑️ Xoá món ăn (admin)
+ * @hook useMutation
+ */
+export const deleteMenuItem = (id) => {
+  return axiosInstance.delete(`${API}/menu-items/${id}`);
+};
+
+/**
+ * 🔄 Cập nhật trạng thái món ăn (hiện/ẩn)
+ * @hook useMutation
+ */
+export const updateMenuItemAvailability = (id, is_available) => {
+  return axiosInstance.patch(`${API}/menu-items/${id}/availability`, {
+    is_available
+  });
 };

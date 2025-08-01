@@ -1,6 +1,6 @@
 // File: components/header/MainNavigation.jsx
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Links } from "react-router-dom";
 import Logo from "../../assets/Logo.png";
 import NavigationLinks from "./NavigationLinks";
 import UserDropdown from "./UserDropdown";
@@ -17,6 +17,9 @@ const MainNavigation = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const reduxUser = useSelector((state) => state.auth.user);
+  const avatarUrl = reduxUser?.avatar?.startsWith("http")
+    ? reduxUser.avatar
+    : `http://localhost:2003${reduxUser?.avatar}`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-1">
@@ -49,7 +52,6 @@ const MainNavigation = ({
             activeDropdown={activeDropdown}
             setActiveDropdown={setActiveDropdown}
           />
-
           {reduxUser ? (
             <Link
               to="/reservation"
@@ -67,14 +69,12 @@ const MainNavigation = ({
               <span className="text-sm">Đặt bàn ngay</span>
             </button>
           )}
-
           <button className="relative flex items-center justify-center p-3 bg-white border border-gray-200 rounded-xl text-gray-700 hover:text-orange-600 shadow-sm hover:shadow-md transition">
             <ShoppingCart className="w-6 h-6" />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               3
             </span>
           </button>
-
           {reduxUser ? (
             <div className="relative">
               <button
@@ -83,10 +83,7 @@ const MainNavigation = ({
               >
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                   {reduxUser.avatar ? (
-                    <img
-                      src={reduxUser.avatar}
-                      className="w-8 h-8 rounded-full"
-                    />
+                    <img src={avatarUrl} className="w-8 h-8 rounded-full" />
                   ) : (
                     <UserCircle className="w-8 h-8" />
                   )}
@@ -99,6 +96,14 @@ const MainNavigation = ({
             </div>
           ) : (
             <LoginButton />
+          )}{" "}
+          {reduxUser?.role == 1 && (
+            <Link
+              to={"/dashboard"}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-black hover:brightness-110 transition text-xl"
+            >
+              dashboard
+            </Link>
           )}
         </div>
       </div>

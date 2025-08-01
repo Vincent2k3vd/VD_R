@@ -16,50 +16,61 @@ const BannerSlider = () => {
   const slides = [
     {
       id: 1,
-      title: "Quản Lý Nhà Hàng Thông Minh",
-      subtitle: "Giải pháp toàn diện cho việc điều hành nhà hàng của bạn",
+      title: "Ẩm Thực Đỉnh Cao Tại VD_Restaurant",
+      subtitle: "Hương vị tinh tế từ những nguyên liệu tươi ngon nhất",
       description:
-        "Hệ thống quản lý hiện đại giúp tối ưu hóa quy trình vận hành",
+        "Khám phá thực đơn phong phú được chế biến bởi các đầu bếp hàng đầu trong không gian ấm cúng và hiện đại.",
       icon: <Utensils className="w-16 h-16 text-white" />,
-      bgGradient: "from-orange-500 via-red-500 to-pink-500",
-      features: ["Quản lý menu", "Theo dõi đơn hàng", "Báo cáo doanh thu"],
+      bgGradient: "from-red-400 via-orange-500 to-yellow-500",
+      features: [
+        "Món Á & Âu",
+        "Không gian sang trọng",
+        "Nguyên liệu tươi mỗi ngày",
+      ],
     },
     {
       id: 2,
-      title: "Đăng Món Ăn Dễ Dàng",
-      subtitle: "Cập nhật menu và món ăn chỉ trong vài giây",
+      title: "Không Gian Lý Tưởng Cho Mọi Dịp",
+      subtitle: "Tổ chức tiệc – Hẹn hò – Gặp gỡ đối tác",
       description:
-        "Thêm, sửa, xóa món ăn với giao diện thân thiện và trực quan",
-      icon: <UtensilsCrossed className="w-16 h-16 text-white" />,
-      bgGradient: "from-green-500 via-teal-500 to-blue-500",
-      features: ["Upload hình ảnh", "Quản lý giá cả", "Phân loại món ăn"],
+        "Từ bữa tối lãng mạn đến tiệc sinh nhật hoặc sự kiện công ty, VD_Restaurant luôn là lựa chọn lý tưởng với không gian đa dạng và dịch vụ chuyên nghiệp.",
+      icon: <Users className="w-16 h-16 text-white" />,
+      bgGradient: "from-indigo-500 via-purple-500 to-pink-500",
+      features: ["Phòng riêng", "Trang trí theo yêu cầu", "Hỗ trợ sự kiện"],
     },
     {
       id: 3,
-      title: "Đặt Bàn Thông Minh",
-      subtitle: "Hệ thống đặt bàn online tiện lợi và nhanh chóng",
-      description: "Khách hàng có thể đặt bàn 24/7, tối ưu hóa lượng khách",
+      title: "Đặt Bàn Dễ Dàng – Trải Nghiệm Tuyệt Vời",
+      subtitle: "Đặt chỗ trước giúp bạn luôn có chỗ ngồi yêu thích",
+      description:
+        "Đặt bàn online nhanh chóng chỉ với vài thao tác. Đội ngũ lễ tân của chúng tôi sẽ chuẩn bị chỗ ngồi tốt nhất cho bạn.",
       icon: <Calendar className="w-16 h-16 text-white" />,
-      bgGradient: "from-purple-500 via-indigo-500 to-blue-600",
-      features: ["Đặt bàn online", "Quản lý lịch", "Xác nhận tự động"],
+      bgGradient: "from-green-500 via-teal-500 to-blue-500",
+      features: [
+        "Đặt bàn online 24/7",
+        "Xác nhận qua SMS/Email",
+        "Chọn bàn theo sở thích",
+      ],
     },
     {
       id: 4,
-      title: "Quản Lý Khách Hàng",
-      subtitle: "Theo dõi và chăm sóc khách hàng một cách tốt nhất",
-      description: "Xây dựng mối quan hệ bền vững với khách hàng thân thiết",
-      icon: <Users className="w-16 h-16 text-white" />,
-      bgGradient: "from-pink-500 via-rose-500 to-red-500",
-      features: ["Lịch sử đơn hàng", "Điểm tích lũy", "Ưu đãi cá nhân"],
+      title: "Dịch Vụ 5 Sao – Phục Vụ Tận Tâm",
+      subtitle:
+        "Chúng tôi không chỉ phục vụ món ăn, mà còn mang đến trải nghiệm",
+      description:
+        "Đội ngũ phục vụ thân thiện, nhanh nhẹn luôn sẵn sàng phục vụ bạn tận tình từ lúc đến cho đến khi rời đi.",
+      icon: <Star className="w-16 h-16 text-white" />,
+      bgGradient: "from-yellow-500 via-amber-500 to-orange-400",
+      features: [
+        "Phục vụ chuyên nghiệp",
+        "Phản hồi nhanh",
+        "Luôn lắng nghe khách hàng",
+      ],
     },
   ];
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const goToSlide = (index) => {
@@ -72,7 +83,7 @@ const BannerSlider = () => {
   }, []);
 
   return (
-    <div className="relative w-3/4 h-96 md:h-[500px] overflow-hidden rounded-xl shadow-2xl">
+    <div className="relative w-full h-96 md:h-[500px] overflow-hidden rounded-xl shadow-2xl">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -91,7 +102,7 @@ const BannerSlider = () => {
             >
               {/* Background Pattern */}
               <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-white"></div>
+                <div className="absolute top-10 left-10 w-10 h-10 rounded-full bg-white"></div>
                 <div className="absolute bottom-10 right-10 w-24 h-24 rounded-full bg-white"></div>
                 <div className="absolute top-1/2 left-1/4 w-16 h-16 rounded-full bg-white"></div>
               </div>
@@ -101,7 +112,7 @@ const BannerSlider = () => {
                 <div className="text-white max-w-2xl">
                   <div className="mb-6 animate-bounce">{slide.icon}</div>
 
-                  <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+                  <h1 className="text-3xl md:text-3xl font-bold mb-4 leading-tight">
                     {slide.title}
                   </h1>
 
@@ -112,32 +123,16 @@ const BannerSlider = () => {
                   <p className="text-sm md:text-base mb-6 opacity-80 leading-relaxed">
                     {slide.description}
                   </p>
-
-                  {/* Features */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {slide.features.map((feature, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-
-                  <button className="bg-white text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                    Khám Phá Ngay
-                  </button>
                 </div>
 
                 {/* Decorative Elements */}
                 <div className="hidden md:flex items-center justify-center">
                   <div className="relative">
-                    <div className="w-64 h-64 rounded-full bg-white bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
-                      <div className="w-48 h-48 rounded-full bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-white bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
+                      <div className="w-20 h-20 rounded-full bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
                         <div className="text-6xl text-white opacity-80">
                           {React.cloneElement(slide.icon, {
-                            className: "w-24 h-24",
+                            className: "w-12 h-12 text-black",
                           })}
                         </div>
                       </div>
@@ -149,21 +144,6 @@ const BannerSlider = () => {
           </div>
         ))}
       </div>
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 backdrop-blur-sm hover:bg-opacity-30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
-      >
-        <ChevronLeft className="w-6 h-6 text-black" />
-      </button>
-
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 backdrop-blur-sm hover:bg-opacity-30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
-      >
-        <ChevronRight className="w-6 h-6 text-black" />
-      </button>
 
       {/* Dots Indicator */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">

@@ -2,6 +2,7 @@
 import axios from 'axios';
 import axiosInstance from '../utils/axiosInstance';
 
+
 // API Configuration
 const API_AUTH = import.meta.env.VITE_API_URL_AUTH;
 
@@ -99,26 +100,6 @@ class AuthService {
   }
 
   /**
-   * Get user profile
-   */
-  async getProfile(token = null) {
-    try {
-      const config = {};
-      
-      if (token) {
-        config.headers = {
-          'Authorization': `Bearer ${token}`
-        };
-      }
-      
-      const response = await axiosInstance.get(`${API_AUTH}/profile`, config);
-      return response.data;
-    } catch (error) {
-      this.handleError(error, 'Lấy thông tin người dùng thất bại');
-    }
-  }
-
-  /**
    * Refresh access token
    */
   async refreshToken() {
@@ -172,37 +153,16 @@ class AuthService {
       this.handleError(error, 'Đổi mật khẩu thất bại');
     }
   }
-
-  /**
-   * Update user profile
-   * @param {Object} userData - User data to update
-   * @returns {Promise<Object>} Update response
-   */
-  async updateProfile(userData) {
-    try {
-      const response = await axiosInstance.put(`${API_AUTH}/profile`, userData);
-      return response.data;
-    } catch (error) {
-      this.handleError(error, 'Cập nhật thông tin thất bại');
-    }
-  }
-
+  
   /**
    * Get access token from localStorage
    * @returns {string|null} Access token or null
    */
-  getAccessToken() {
-    return localStorage.getItem('accessToken');
-  }
 
   /**
    * Check if user is authenticated
    * @returns {boolean} Authentication status
    */
-  isAuthenticated() {
-    const token = this.getAccessToken();
-    return !!token;
-  }
 
   /**
    * Clear all authentication data from localStorage
@@ -244,5 +204,4 @@ class AuthService {
   }
 }
 
-// Export singleton instance
 export default new AuthService();

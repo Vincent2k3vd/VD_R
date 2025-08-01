@@ -1,38 +1,77 @@
 const express = require('express');
 const router = express.Router();
-const {
-    getAllMenuItems,
-    getMenuItemById,
-    createMenuItem,
-    updateMenuItem,
-    deleteMenuItem,
-    getFeaturedMenuItems,
-    getMenuItemsByCategory,
-    updateMenuItemAvailability
-} = require('../controllers/menuItemController');
+const menuItemController = require('../controllers/menuItemController');
+const verifyRole = require('../middlewares/verifyRole');
+const verifyToken = require('../middlewares/verifyToken');
 
-// GET /api/menu-items - Get all menu items with filtering, pagination, sorting
-router.get('/', getAllMenuItems);
+/**
+ * @route   GET /api/menu
+ * @desc    Lọc món ăn nâng cao (dùng cho cả admin & public)
+ * @access  Public
+ */
+router.get('/', menuItemController.getFilteredMenuItems);
 
-// GET /api/menu-items/featured - Get featured menu items
-router.get('/featured', getFeaturedMenuItems);
+/**
+ * @route   GET /api/menu/search
+ * @desc    Tìm kiếm món ăn theo tên
+ * @access  Public
+ */
+router.get('/search', menuItemController.searchMenuItems);
 
-// GET /api/menu-items/category/:category_id - Get menu items by category
-router.get('/category/:category_id', getMenuItemsByCategory);
+/**
+ * @route   GET /api/menu/all
+ * @desc    Lấy tất cả món ăn (không phân trang, không include)
+ * @access  Public
+ */
+router.get('/all', menuItemController.getAllMenuItems);
 
-// GET /api/menu-items/:id - Get specific menu item by ID
-router.get('/:id', getMenuItemById);
+/**
+ * @route   GET /api/menu/featured
+ * @desc    Lấy danh sách món ăn nổi bật
+ * @access  Public
+ */
+router.get('/featured', menuItemController.getFeaturedMenuItems);
 
-// POST /api/menu-items - Create new menu item
-router.post('/', createMenuItem);
+/**
+ * @route   GET /api/menu/category/:category_id
+ * @desc    Lấy danh sách món ăn theo danh mục
+ * @access  Public
+ */
+router.get('/category/:category_id', menuItemController.getMenuItemsByCategory);
 
-// PUT /api/menu-items/:id - Update menu item
-router.put('/:id', updateMenuItem);
+/**
+ * @route   GET /api/menu/:id
+ * @desc    Lấy thông tin chi tiết món ăn theo ID
+ * @access  Public
+ */
+router.get('/:id', menuItemController.getMenuItemById);
 
-// PATCH /api/menu-items/:id/availability - Update menu item availability
-router.patch('/:id/availability', updateMenuItemAvailability);
+/**
+ * @route   POST /api/menu
+ * @desc    Thêm món ăn mới
+ * @access  Private (admin, manager)
+ */
+router.post('/', verifyToken, verifyRole([1, 2]), menuItemController.createMenuItem);
 
-// DELETE /api/menu-items/:id - Delete menu item
-router.delete('/:id', deleteMenuItem);
+/**
+ * @route   PUT /api/menu/:id
+ * @desc    Cập nhật thông tin món ăn
+ * @access  Private (admin, manager)
+ */
+router.put('/:id', verifyToken, verifyRole([1, 2]), menuItemController.updateMenuItem);
+
+/**
+ * @route   PATCH /api/menu/:id/availability
+ * @desc    Cập nhật trạng thái còn hàng của món ăn
+ * @access  Private (admin, manager)
+ */
+router.patch('/:id/availability', verifyToken, verifyRole([1, 2]), menuItemController.updateMenuItemAvailability);
+
+/**
+ * @route   DELETE /api/menu/:id
+ * @desc    Xoá món ăn khỏi hệ thống
+ * @access  Private (admin, manager)
+ */
+router.delete('/:id', verifyToken, verifyRole([1, 2]), menuItemController.deleteMenuItem);
 
 module.exports = router;

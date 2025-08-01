@@ -353,6 +353,7 @@ const signin = async (req, res) => {
           user_id: user.user_id,
           username: user.username,
           email: user.email,
+          phone: user.phone,
           role: user.role,
           avatar: user.avatar
         },
@@ -627,7 +628,7 @@ const refreshToken = async (req, res) => {
     const newAccessToken = generateToken({
       id: user.user_id,
       email: user.email,
-      role: user.role
+      role: user.role_id
     },'15m');
 
     logger.info('Token refreshed successfully', { 
@@ -646,36 +647,6 @@ const refreshToken = async (req, res) => {
       ip: req.ip 
     });
     return errorResponse(res, 500, "Lỗi máy chủ khi refresh token");
-  }
-};
-
-const getProfile = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    const user = await User.findByPk(userId, {
-      attributes: ['user_id', 'username', 'email', 'role_id', 'last_login_at', 'avatar', 'created_at'],
-      include: {
-        model: Role,
-        as: 'role',
-        attributes: ['name']
-      }
-    });
-
-    if (!user) {
-      return errorResponse(res, 404, "Người dùng không tồn tại");
-    }
-
-    return successResponse(res, 200, "Lấy thông tin profile thành công", { user });
-
-  } catch (error) {
-    logger.error('Get profile error', { 
-      error: error.message, 
-      stack: error.stack,
-      userId: req.user?.id,
-      ip: req.ip 
-    });
-    return errorResponse(res, 500, "Máy chủ đang bảo trì hoặc sửa chữa, vui lòng thử lại sau ít phút");
   }
 };
 
@@ -797,6 +768,7 @@ const authGoogle = async (req, res) => {
           user_id: user.user_id,
           username: user.username,
           email: user.email,
+          phone: user.phone,
           role: user.role_id,
           avatar: user.avatar
         },
@@ -830,8 +802,6 @@ module.exports = {
   resetPassword,
   refreshToken,
   logout,
-  getProfile,
-  getAdminData,
   authGoogle,
   
   // Utility functions

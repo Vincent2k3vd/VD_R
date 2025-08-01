@@ -1,17 +1,22 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
+
 import StepHeader from "../../components/Reservation/StepHeader";
 import Step1TableSelection from "../../components/Reservation/Step1TableSelection";
 import Step2MenuSelection from "../../components/Reservation/Step2MenuSelection";
 import Step3CustomerInfo from "../../components/Reservation/Step3CustomerInfo";
 import Step4Success from "../../components/Reservation/Step4Success";
+
 import { useGetTable } from "../../hooks/useTable";
 import { useMenuList } from "../../hooks/useMenuItem";
 import { useCreateReservation } from "../../hooks/useReservation";
-import { useSelector } from "react-redux";
 
 const ReservationPage = () => {
-  const [step, setStep] = useState(1);
   const user = useSelector((state) => state.auth.user);
+  const [step, setStep] = useState(1);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [reservationSuccess, setReservationSuccess] = useState(null);
+
   const [reservationData, setReservationData] = useState({
     reservation_date: "",
     reservation_time: "",
@@ -40,35 +45,46 @@ const ReservationPage = () => {
 
   const { data: tablesData, loading: tablesLoading } = useGetTable(tableParams);
 
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [total, setTotal] = useState(0);
-
-  const { data: menuData, loading: menuLoading } = useMenuList({}, true);
+  const { data: menuData, loading: menuLoading } = useMenuList({});
   const { mutate: createReservation, isLoading: isCreating } =
     useCreateReservation();
-  const [reservationSuccess, setReservationSuccess] = useState(null);
 
-  useEffect(() => {
-    const newTotal = selectedItems.reduce(
+  const total = useMemo(() => {
+    return selectedItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    setTotal(newTotal);
   }, [selectedItems]);
 
   const handleSubmit = () => {
     const finalData = {
-      ...reservationData,
-      menuItems: selectedItems,
-      totalAmount: total,
+      user_id: user?.user_id,
+      reservation_date: reservationData.reservation_date,
+      reservation_time: reservationData.reservation_time,
+      guest_count: reservationData.guest_count,
+      table_id: reservationData.table_id,
+      customerInfo: {
+        name: reservationData.customerInfo.name,
+        phone: reservationData.customerInfo.phone,
+        email: reservationData.customerInfo.email,
+        special_requests: reservationData.customerInfo.special_requests,
+      },
+      items: selectedItems.map((item) => ({
+        menu_item_id: item.menu_item_id,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.price * item.quantity,
+        special_instructions: item.note || "",
+      })),
     };
+
     createReservation(finalData, {
       onSuccess: (response) => {
         setReservationSuccess(response.data);
         setStep(4);
       },
       onError: (error) => {
-        console.error("Đặt bàn thất bại", error);
+        console.error("Đặt bàn thất bại:", error?.response?.data || error);
       },
     });
   };
@@ -76,18 +92,20 @@ const ReservationPage = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <StepHeader step={step} />
+
       {step === 1 && (
         <Step1TableSelection
           reservationData={reservationData}
           setReservationData={setReservationData}
           setStep={setStep}
-          tablesData={tablesData?.data}
+          tablesData={tablesData?.data || []}
           tablesLoading={tablesLoading}
         />
       )}
+
       {step === 2 && (
         <Step2MenuSelection
-          menuData={menuData.data}
+          menuData={menuData?.data || []}
           menuLoading={menuLoading}
           selectedItems={selectedItems}
           setSelectedItems={setSelectedItems}
@@ -96,18 +114,20 @@ const ReservationPage = () => {
           total={total}
         />
       )}
+
       {step === 3 && (
         <Step3CustomerInfo
           reservationData={reservationData}
           setReservationData={setReservationData}
           setStep={setStep}
-          tablesData={tablesData?.data}
+          tablesData={tablesData?.data || []}
           selectedItems={selectedItems}
           total={total}
           handleSubmit={handleSubmit}
           isCreating={isCreating}
         />
       )}
+
       {step === 4 && reservationSuccess && (
         <Step4Success data={reservationSuccess} />
       )}

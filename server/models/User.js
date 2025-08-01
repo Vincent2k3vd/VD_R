@@ -6,9 +6,8 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true
     },
     username: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(200),
       allowNull: false,
-      unique: true
     },
     email: {
       type: DataTypes.STRING(100),
@@ -37,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     avatar: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    birth: {
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
     is_active: {

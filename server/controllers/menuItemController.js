@@ -3,17 +3,40 @@ const { Op } = require('sequelize');
 const buildWhereClause = require('../utils/buildWhereClauseCategory.js');
 const { buildFilters, buildIncludeOptions } = require('../utils/queryHelpers');
 
-// Get all menu items with filtering
-const getAllMenuItems = async (req, res) => {
+const searchMenuItems = async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
-      sortBy = 'display_order',
-      sortOrder = 'ASC'
-    } = req.query;
+    const { keyword = '', limit = 10, page = 1 } = req.query;
 
-    const filters = buildFilters(req.query);
+    const { rows, count } = await MenuItem.findAndCountAll({
+      where: {
+        item_name: {
+          [Op.like]: `%${keyword}%`
+        }
+      },
+      limit: parseInt(limit),
+      offset: (page - 1) * limit,
+      order: [['item_name', 'ASC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(count / limit),
+        totalItems: count
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Search failed', error: error.message });
+  }
+};
+
+const getFilteredMenuItems = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
+
+    const filters = buildFilters(req.query); 
     const whereClause = buildWhereClause(filters);
     const include = buildIncludeOptions(req.query);
 
@@ -23,14 +46,10 @@ const getAllMenuItems = async (req, res) => {
       where: whereClause,
       include,
       limit: parseInt(limit),
-      offset: parseInt(offset),
+      offset,
       order: [[sortBy, sortOrder.toUpperCase()]],
       distinct: true
     });
-
-    const activeFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, val]) => val !== undefined && val !== null && val !== '')
-    );
 
     res.status(200).json({
       success: true,
@@ -41,22 +60,29 @@ const getAllMenuItems = async (req, res) => {
         totalItems: count,
         itemsPerPage: parseInt(limit)
       },
-      filters: activeFilters,
-      meta: {
-        hasFilters: Object.keys(activeFilters).length > 0,
-        sortBy,
-        sortOrder: sortOrder.toUpperCase(),
-        includedRelations: {
-          category: req.query.include_category === 'true',
-          variants: req.query.include_variants === 'true',
-          ingredients: req.query.include_ingredients === 'true'
-        }
-      }
+      filters: Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== undefined))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error filtering menu items', error: error.message });
+  }
+};
+
+
+const getAllMenuItems = async (req, res) => {
+  try {
+    const menuItems = await MenuItem.findAll({
+      order: [['menu_item_id', 'ASC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      data: menuItems,
+      count: menuItems.length
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching menu items',
+      message: 'Error fetching all menu items',
       error: error.message
     });
   }
@@ -64,54 +90,28 @@ const getAllMenuItems = async (req, res) => {
 
 // Get menu item by ID
 const getMenuItemById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { include_all } = req.query;
-        
-        const include = [];
-        if (include_all === 'true') {
-            include.push(
-                {
-                    model: Category,
-                    as: 'category',
-                    attributes: ['category_id', 'category_name', 'description']
-                },
-                {
-                    model: MenuVariant,
-                    as: 'variants',
-                    attributes: ['variant_id', 'variant_name', 'additional_price', 'is_available']
-                },
-                {
-                    model: MenuIngredient,
-                    as: 'menu_ingredients',
-                    attributes: ['ingredient_id', 'quantity', 'unit']
-                }
-            );
-        }
-        
-        const menuItem = await MenuItem.findByPk(id, {
-            include: include
-        });
-        
-        if (!menuItem) {
-            return res.status(404).json({
-                success: false,
-                message: `Menu item with ID ${id} not found`
-            });
-        }
-        
-        res.status(200).json({
-            success: true,
-            data: menuItem
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching menu item',
-            error: error.message
-        });
+  try {
+    const { id } = req.params;
+    const { include_all } = req.query;
+
+    const include = include_all === 'true' ? [
+      { model: Category, as: 'category' },
+      { model: MenuVariant, as: 'variants' },
+      { model: MenuIngredient, as: 'menu_ingredients' }
+    ] : [];
+
+    const menuItem = await MenuItem.findByPk(id, { include });
+
+    if (!menuItem) {
+      return res.status(404).json({ success: false, message: 'Menu item not found' });
     }
+
+    res.status(200).json({ success: true, data: menuItem });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching menu item', error: error.message });
+  }
 };
+
 
 // Create new menu item
 const createMenuItem = async (req, res) => {
@@ -358,11 +358,13 @@ const updateMenuItemAvailability = async (req, res) => {
 };
 
 module.exports = {
+    searchMenuItems,
     getAllMenuItems,
     getMenuItemById,
     createMenuItem,
     updateMenuItem,
     deleteMenuItem,
+    getFilteredMenuItems,
     getFeaturedMenuItems,
     getMenuItemsByCategory,
     updateMenuItemAvailability

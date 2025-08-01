@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
     total_amount: {
       type: DataTypes.DECIMAL(10, 2),
     },
+    phone: {
+      type: DataTypes.STRING(15),
+      allowNull: true
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -46,23 +50,23 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Reservation.associate = (models) => {
-    Reservation.belongsTo(models.User, {
-      foreignKey: 'user_id',
-      as: 'user'
-    });
+  Reservation.belongsTo(models.User, {
+    foreignKey: 'user_id',
+    as: 'user'
+  });
 
-    Reservation.belongsToMany(models.Table, {
-      through: models.ReservationTable,
-      foreignKey: 'reservation_id',
-      otherKey: 'table_id',
-      as: 'tables'
-    });
+  Reservation.hasMany(models.ReservationTable, { as: 'reservation_tables', foreignKey: 'reservation_id' });
 
-    Reservation.hasMany(models.ReservationItem, {
-      foreignKey: 'reservation_id',
-      as: 'items'
-    });
-  };
+  Reservation.hasMany(models.ReservationItem, { as: 'items', foreignKey: 'reservation_id' });
+
+  Reservation.belongsToMany(models.Table, {
+    through: models.ReservationTable,
+    foreignKey: 'reservation_id',
+    otherKey: 'table_id',
+    as: 'tables'
+  });
+};
+
 
 
 

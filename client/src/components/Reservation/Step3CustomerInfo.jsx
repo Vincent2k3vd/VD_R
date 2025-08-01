@@ -27,9 +27,10 @@ const Step3CustomerInfo = ({
 }) => {
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {}, [reservationData]);
+  useEffect(() => {
+    console.log(reservationData);
+  }, [reservationData]);
 
-  // Get selected table info
   const getSelectedTable = () => {
     if (!tablesData || !reservationData.table_id) return null;
     return tablesData.find(
@@ -52,11 +53,10 @@ const Step3CustomerInfo = ({
       return newState;
     });
 
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors[field]; // Completely remove the error
+        delete newErrors[field];
         return newErrors;
       });
     }
@@ -66,7 +66,6 @@ const Step3CustomerInfo = ({
     const newErrors = {};
     const { customerInfo } = reservationData;
 
-    // Validate required fields
     if (!customerInfo?.name?.trim()) {
       newErrors.name = "Vui lòng nhập họ và tên";
     }
@@ -74,7 +73,6 @@ const Step3CustomerInfo = ({
     if (!customerInfo?.phone?.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại";
     } else {
-      // Clean phone number for validation
       const cleanPhone = customerInfo.phone.replace(/[\s-()]/g, "");
       if (!/^[0-9]{10,11}$/.test(cleanPhone)) {
         newErrors.phone = "Số điện thoại phải có 10-11 số";
@@ -93,7 +91,6 @@ const Step3CustomerInfo = ({
 
   const handleConfirm = () => {
     if (validateForm()) {
-      // Cập nhật items vào reservationData trước khi submit
       setReservationData((prev) => ({
         ...prev,
         items: selectedItems.map((item) => ({
@@ -102,10 +99,9 @@ const Step3CustomerInfo = ({
           unit_price: item.price,
           special_instructions: item.special_instructions || "",
         })),
-        total_amount: total, // Cập nhật luôn tổng tiền nếu cần
+        total_amount: total,
       }));
 
-      // Gọi submit sau 1 chút để đảm bảo state cập nhật xong
       setTimeout(() => {
         handleSubmit();
       }, 0);

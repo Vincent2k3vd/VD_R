@@ -12,6 +12,7 @@ import { recommendTables } from "../../utils/recommendTables";
 import TableCard from "../../components/table/TableCard";
 import CombinationCard from "../../components/table/CombinationCard";
 import TABLE_TYPE_CONFIG from "../../config/tableTypesConfig";
+import { fetchTablesRecoment } from "../../services/tableService";
 
 const Step1TableSelection = ({
   reservationData,
@@ -20,8 +21,9 @@ const Step1TableSelection = ({
   tablesData,
   tablesLoading,
 }) => {
-  const [selectedTable, setSelectedTable] = useState(reservationData.table_id);
-  const [selectedCombination, setSelectedCombination] = useState(null);
+  const [selectedTableIds, setSelectedTableIds] = useState(
+    reservationData.table_id || []
+  );
   const [errors, setErrors] = useState({});
   const [activeFilter, setActiveFilter] = useState("all");
   const [recommended, setRecommended] = useState({
@@ -31,7 +33,6 @@ const Step1TableSelection = ({
 
   const cachedTablesData = useRef(null);
 
-  // Time slots for reservation
   const timeSlots = [
     "18:00",
     "18:30",
@@ -44,16 +45,28 @@ const Step1TableSelection = ({
     "22:00",
   ];
 
-  // Guest count options
-  const guestCounts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20];
+  const guestCounts = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  ];
+
+  const fetchTablesRecoments = async (guestCount) => {
+    try {
+      const response = await fetchTablesRecoment(guestCount);
+      if (response && response.data) {
+        setRecommended(response.data);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy bàn gợi ý từ API:", error);
+    }
+  };
 
   useEffect(() => {
-    // Nếu tablesData có dữ liệu, lưu lại
     if (Array.isArray(tablesData) && tablesData.length > 0) {
       cachedTablesData.current = tablesData;
     }
+  }, [tablesData]);
 
-    // Nếu rỗng mà có dữ liệu cache => dùng lại cache
+  useEffect(() => {
     const dataToUse =
       Array.isArray(tablesData) && tablesData.length > 0
         ? tablesData
@@ -63,9 +76,12 @@ const Step1TableSelection = ({
       const result = recommendTables(dataToUse, reservationData.guest_count);
       setRecommended(result);
     }
-  }, [tablesData, reservationData.guest_count]);
 
-  // ✅ Dùng dữ liệu đã được xử lý trong useEffect
+    if (reservationData.guest_count > 8) {
+      fetchTablesRecoments(reservationData.guest_count);
+    }
+  }, [reservationData.guest_count, tablesData]);
+
   const filteredRecommendations = useMemo(() => {
     const { single, combinations } = recommended;
 
@@ -91,23 +107,19 @@ const Step1TableSelection = ({
   };
 
   const handleTableSelect = (selection) => {
+    let selectedIds = [];
+
     if (selection.type === "single") {
-      setSelectedTable(selection.table_id);
-      setSelectedCombination(null);
-      setReservationData((prev) => ({
-        ...prev,
-        table_id: [selection.table_id],
-        table_combination: null,
-      }));
-    } else {
-      setSelectedTable(null);
-      setSelectedCombination(selection.id);
-      setReservationData((prev) => ({
-        ...prev,
-        table_id: null,
-        table_combination: selection.tables.map((t) => t.table_id),
-      }));
+      selectedIds = [selection.table_id];
+    } else if (selection.type === "combination") {
+      selectedIds = selection.tables.map((t) => t.table_id);
     }
+
+    setSelectedTableIds(selectedIds);
+    setReservationData((prev) => ({
+      ...prev,
+      table_id: selectedIds,
+    }));
 
     if (errors.table_id) {
       setErrors((prev) => ({ ...prev, table_id: null }));
@@ -125,7 +137,7 @@ const Step1TableSelection = ({
       newErrors.reservation_time = "Vui lòng chọn giờ đặt bàn";
     }
 
-    if (!selectedTable && !selectedCombination) {
+    if (!reservationData.table_id || reservationData.table_id.length === 0) {
       newErrors.table_id = "Vui lòng chọn bàn";
     }
 
@@ -295,7 +307,7 @@ const Step1TableSelection = ({
                       <TableCard
                         key={table.table_id}
                         table={table}
-                        isSelected={selectedTable === table.table_id}
+                        isSelected={selectedTableIds.includes(table.table_id)}
                         onSelect={handleTableSelect}
                         config={TABLE_TYPE_CONFIG[table.table_type]}
                         showEfficiency={true}
@@ -319,7 +331,10 @@ const Step1TableSelection = ({
                         <CombinationCard
                           key={combination.id}
                           combination={combination}
-                          isSelected={selectedCombination === combination.id}
+                          isSelected={
+                            selectedTableIds.join("-") ===
+                            combination.tables.map((t) => t.table_id).join("-")
+                          }
                           onSelect={handleTableSelect}
                           config={
                             TABLE_TYPE_CONFIG[

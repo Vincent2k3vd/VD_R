@@ -14,7 +14,6 @@ const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-
   const clearErrors = useCallback(() => {
     setErrors({});
   }, []);
@@ -151,28 +150,6 @@ const useAuth = () => {
     }
   }, [navigate, handleAuthError, storeAuthData, clearErrors]);
 
-  const getProfile = useCallback(async ({ accessToken } = {}) => {
-    const token = accessToken || authService.getAccessToken();
-    
-    if (!token) {
-      console.warn("No access token available for profile fetch");
-      return null;
-    }
-
-    try {
-      const response = await authService.getProfile(token);
-      return response.data.user;
-    } catch (error) {
-      console.error("Get profile error:", error);
-      
-      // If token is invalid, clear auth data
-      if (error.code === 401) {
-        clearAuthData();
-      }
-      
-      return null;
-    }
-  }, [clearAuthData]);
 
   const verifyEmail = useCallback(async (token) => {
     if (!token) {
@@ -288,7 +265,6 @@ const useAuth = () => {
     login,
     register,
     loginWithGoogle,
-    getProfile,
     verifyEmail,
     forgotPassword,
     resetPassword,

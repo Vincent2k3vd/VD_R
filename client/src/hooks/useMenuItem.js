@@ -2,29 +2,51 @@ import useQuery from "./useQuery";
 import * as menuService from "../services/menuItemService";
 
 /**
- * Lấy danh sách tất cả món ăn (có lọc, phân trang, sắp xếp)
+ * 📋 Lấy danh sách món ăn có lọc, phân trang, sắp xếp
+ * @param {object} filters - ví dụ: { category_id, is_available, page, limit }
+ * @param {boolean} enabled
  */
 export const useMenuList = (filters = {}, enabled = true) => {
-  return useQuery(() => menuService.fetchAllMenuItems(filters), [JSON.stringify(filters)], enabled);
+  return useQuery(
+    () => menuService.fetchFilteredMenuItems(filters),
+    [JSON.stringify(filters)],
+    { enabled }
+  );
 };
 
 /**
- * Lấy món ăn nổi bật
+ * ⭐ Lấy danh sách món ăn nổi bật
  */
 export const useFeaturedMenu = () => {
-  return useQuery(() => menuService.fetchFeaturedMenuItems(), []);
+  return useQuery(
+    () => menuService.fetchFeaturedMenuItems(),
+    [],
+    { enabled: true }
+  );
 };
 
 /**
- * Lấy món ăn theo category
+ * 📂 Lấy danh sách món ăn theo danh mục
+ * @param {string|number} categoryId
+ * @param {boolean} enabled
  */
 export const useMenuByCategory = (categoryId, enabled = true) => {
-  return useQuery(() => menuService.fetchMenuItemsByCategory(categoryId), [categoryId], enabled);
+  return useQuery(
+    () => menuService.fetchMenuItemsByCategory(categoryId),
+    [categoryId],
+    { enabled: !!categoryId && enabled }
+  );
 };
 
 /**
- * Lấy món ăn theo ID
+ * 📄 Lấy chi tiết món ăn theo ID
+ * @param {string|number} id
+ * @param {boolean} enabled
  */
 export const useMenuDetail = (id, enabled = true) => {
-  return useQuery(() => menuService.fetchMenuItemById(id), [id], enabled);
+  return useQuery(
+    () => menuService.fetchMenuItemById(id),
+    [id],
+    { enabled: !!id && enabled }
+  );
 };

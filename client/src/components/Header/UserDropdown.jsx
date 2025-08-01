@@ -61,10 +61,10 @@ const UserDropdown = ({ setIsDropdownOpen }) => {
     setIsLoggingOut(true);
     try {
       await logout();
+
       setIsDropdownOpen(false);
     } catch (error) {
       console.error("Logout failed:", error);
-      // Handle logout error (show toast, etc.)
     } finally {
       setIsLoggingOut(false);
     }

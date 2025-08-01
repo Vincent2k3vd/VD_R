@@ -1,30 +1,57 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-const useQuery = (queryFn, deps = [], enabled = true) => {
-  const [data, setData] = useState(null);
+const useQuery = (queryFn, deps = [], options = {}) => {
+  const {
+    enabled = true,
+    initialData = null,
+    onSuccess,
+    onError,
+  } = options;
+
+  const isMounted = useRef(true);
+  const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!enabled) return;
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await queryFn();
-        setData(response.data);
-      } catch (err) {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await queryFn();
+      if (isMounted.current) {
+        setData(res.data);
+        onSuccess?.(res.data);
+      }
+    } catch (err) {
+      if (isMounted.current) {
         setError(err);
-      } finally {
+        onError?.(err);
+      }
+    } finally {
+      if (isMounted.current) {
         setLoading(false);
       }
-    };
-
-    fetchData();
+    }
   }, [enabled, ...deps]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    isMounted.current = true;
+    fetchData();
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, [fetchData]);
+
+  return {
+    data,
+    loading,
+    error,
+    refetch: fetchData,
+  };
 };
 
 export default useQuery;

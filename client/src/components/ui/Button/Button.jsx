@@ -4,8 +4,8 @@ export default function Button({
   children,
   onClick,
   type = "button",
-  variant = "primary", // primary | secondary | danger
-  size = "md", // sm | md | lg
+  variant = "primary",
+  size = "md",
   loading = false,
   disabled = false,
   iconLeft: IconLeft,
@@ -27,6 +27,8 @@ export default function Button({
     danger: "bg-red-600 text-white hover:bg-red-700",
   };
 
+  const spinnerColor = variant === "secondary" ? "text-gray-600" : "text-white";
+
   const isDisabled = loading || disabled;
 
   return (
@@ -44,7 +46,7 @@ export default function Button({
     >
       {loading ? (
         <svg
-          className="animate-spin h-5 w-5 mr-2 text-white"
+          className={`animate-spin h-5 w-5 mr-2 ${spinnerColor}`}
           viewBox="0 0 24 24"
         >
           <circle
@@ -68,34 +70,4 @@ export default function Button({
       {IconRight && !loading && <IconRight className="ml-2" size={18} />}
     </button>
   );
-}
-
-{
-  /* import { Send, Trash2 } from "lucide-react";
-import Button from "./components/Button";
-
-function App() {
-  return (
-    <div className="flex flex-col gap-4 p-4 max-w-md mx-auto">
-      <Button onClick={() => alert("Gửi")} iconRight={Send}>
-        Gửi
-      </Button>
-
-      <Button
-        variant="danger"
-        size="sm"
-        iconLeft={Trash2}
-        onClick={() => alert("Xoá")}
-      >
-        Xoá
-      </Button>
-
-      <Button loading size="lg">
-        Đang xử lý...
-      </Button>
-    </div>
-  );
-}
-
-*/
 }
