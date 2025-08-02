@@ -4,12 +4,10 @@ const { User, RefreshToken, Role } = require('../models/index');
 const { sendEmail } = require('../utils/mailer');
 const { OAuth2Client } = require("google-auth-library");
 const logger = require('../utils/logger');
-
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const successResponse = require ('../utils/successResponse');
 const errorResponse = require ('../utils/errorResponse');
 const handleValidationErrors = require('../utils/handleValidationErrors');
-
 
 // Configuration
 const config = {
@@ -165,7 +163,6 @@ const verifyEmail = async (req, res) => {
     try {
       decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       
-      // Check if token is for email verification
       if (decoded.type !== 'email_verification') {
         return errorResponse(res, 400, 'Token không hợp lệ cho việc xác thực email');
       }
@@ -226,7 +223,7 @@ const resendVerificationEmail = async (req, res) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      // Don't reveal if user exists or not for security
+      
       return successResponse(res, 200, 'Nếu email tồn tại, chúng tôi đã gửi lại email xác thực.');
     }
 

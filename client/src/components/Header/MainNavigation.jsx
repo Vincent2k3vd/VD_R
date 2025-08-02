@@ -6,6 +6,7 @@ import NavigationLinks from "./NavigationLinks";
 import UserDropdown from "./UserDropdown";
 import LoginButton from "./LoginButton";
 import { Calendar, ShoppingCart, UserCircle, Menu } from "lucide-react";
+const API = import.meta.env.VITE_API_URL;
 
 import { useSelector } from "react-redux";
 
@@ -19,7 +20,7 @@ const MainNavigation = ({
   const reduxUser = useSelector((state) => state.auth.user);
   const avatarUrl = reduxUser?.avatar?.startsWith("http")
     ? reduxUser.avatar
-    : `http://localhost:2003${reduxUser?.avatar}`;
+    : `${API}${reduxUser?.avatar}`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-1">

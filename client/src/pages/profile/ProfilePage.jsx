@@ -10,6 +10,7 @@ import ProfileHistory from "../../components/profile/TabHistory";
 import ProfileFavorites from "../../components/profile/TabFavorites";
 import ProfileAchievements from "../../components/profile/TabAchievements";
 import ProfileSettings from "../../components/profile/TabSettings";
+const API = import.meta.env.VITE_API_URL;
 
 import { useDispatch } from "react-redux";
 import { updateUser } from "../../stores/authSlice";
@@ -109,7 +110,7 @@ const ProfilePage = () => {
 
   const avatarUrl = profileData?.avatar?.startsWith("http")
     ? profileData.avatar
-    : `http://localhost:2003${profileData?.avatar}`;
+    : `${API}${profileData?.avatar}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
