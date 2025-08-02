@@ -35,7 +35,6 @@ export const fetchTableFilters = () => {
   return axiosInstance.get("/tables/filters/options");
 };
 
-
 export const fetchTableStats = () => {
   return axiosInstance.get("/tables/stats/summary");
 };
