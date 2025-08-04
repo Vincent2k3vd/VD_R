@@ -70,12 +70,14 @@ const MainNavigation = ({
               <span className="text-sm">Đặt bàn ngay</span>
             </button>
           )}
-          <button className="relative flex items-center justify-center p-3 bg-white border border-gray-200 rounded-xl text-gray-700 hover:text-orange-600 shadow-sm hover:shadow-md transition">
-            <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              3
-            </span>
-          </button>
+          {reduxUser?.role == 1 && (
+            <Link
+              to={"/dashboard"}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-black hover:brightness-110 transition"
+            >
+              dashboard
+            </Link>
+          )}
           {reduxUser ? (
             <div className="relative">
               <button
@@ -98,14 +100,6 @@ const MainNavigation = ({
           ) : (
             <LoginButton />
           )}{" "}
-          {reduxUser?.role == 1 && (
-            <Link
-              to={"/dashboard"}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-black hover:brightness-110 transition text-xl"
-            >
-              dashboard
-            </Link>
-          )}
         </div>
       </div>
     </div>
