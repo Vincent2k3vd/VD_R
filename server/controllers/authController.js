@@ -582,6 +582,7 @@ const resetPassword = async (req, res) => {
 
 const refreshToken = async (req, res) => {
   try {
+
     const token = req.cookies.refreshToken;
     
     if (!token) {
@@ -752,7 +753,7 @@ const authGoogle = async (req, res) => {
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: "Strict",
+        SameSite: "Lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       }); 
       logger.info('Google login successful', { 
