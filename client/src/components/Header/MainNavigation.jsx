@@ -73,7 +73,7 @@ const MainNavigation = ({
           {reduxUser?.role == 1 && (
             <Link
               to={"/dashboard"}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-black hover:brightness-110 transition"
+              className="flex items-center py-2 rounded-lg text-black hover:brightness-110 transition bg-amber-400"
             >
               dashboard
             </Link>
