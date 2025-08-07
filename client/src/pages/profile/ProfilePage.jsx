@@ -49,7 +49,6 @@ const ProfilePage = () => {
       try {
         const res = await getUserReservations(id, accessToken);
         setHistoryData(res?.data || []);
-        console.log(res);
       } catch (err) {
         err;
         toast.error("Không thể tải lịch sử đặt bàn");
