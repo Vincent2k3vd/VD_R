@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 
 const Step4Success = ({ data }) => {
-  // Format date và time để hiển thị đẹp hơn
-  console.log(data);
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("vi-VN", {
